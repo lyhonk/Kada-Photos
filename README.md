@@ -1,7 +1,7 @@
 # Introducing the all-new Kada Photos — Your memories, perfected. 
 
 ```
-制作教程这几天就开始写，写完后更新
+目前已更新硬件代码，组装教程本周更新
 ```
 
 介绍一下最近做的小项目——咔哒相册
