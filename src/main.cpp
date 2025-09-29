@@ -4,6 +4,7 @@
 DS3231模块
 SDA -> 8
 SCL -> 9
+SQW -> 10
 
 墨水屏驱动板(epdif.h)
 BUSY_PIN  -> 7
@@ -13,6 +14,10 @@ CS_PIN    -> 4
 HSPI_SCLK -> 12
 HSPI_COPI -> 13
 
+按键接法
+左 (切换模式)     -> 1
+中 (重置无线密码) -> 2
+右 (立即刷新图片) -> 11
 */
 
 #include <Arduino.h>
@@ -37,8 +42,15 @@ HSPI_COPI -> 13
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp.aliyun.com", 8 * 3600, 60000); // UTC+8时区，每60秒更新一次
 
-// DS3231 的中断引脚，与ESP32S3的GPIO10相连
-#define DS3231_INTERRUPT_PIN 10
+#define BUTTON_PIN_BITMASK(GPIO) (1ULL << GPIO)  // 2 ^ GPIO_NUMBER in hex
+#define WAKEUP_GPIO_1              GPIO_NUM_1
+#define WAKEUP_GPIO_2              GPIO_NUM_2
+#define WAKEUP_GPIO_10             GPIO_NUM_10
+#define WAKEUP_GPIO_11             GPIO_NUM_11
+
+// Define bitmask for multiple GPIOs
+uint64_t bitmask = BUTTON_PIN_BITMASK(WAKEUP_GPIO_1) | BUTTON_PIN_BITMASK(WAKEUP_GPIO_2) | BUTTON_PIN_BITMASK(WAKEUP_GPIO_10) | BUTTON_PIN_BITMASK(WAKEUP_GPIO_11);
+
 
 RTC_DS3231 rtc;
 
@@ -426,9 +438,9 @@ void setup()
     // 清除所有闹钟，确保上次的闹钟不会影响本次
     rtc.clearAlarm(1);
     rtc.clearAlarm(2);
-    // 设置一个固定的闹钟时间：凌晨 00:00:00
+    // 设置一个固定的闹钟时间：凌晨 00:02:00
     // TODO：联网后获取触发时间，并设置闹钟
-    DateTime midnight(2000, 1, 1, 0, 0, 0); // 年月日是占位符，不影响闹钟触发
+    DateTime midnight(2000, 1, 1, 0, 2, 0); // 年月日是占位符，不影响闹钟触发
 
     // 设置闹钟1，匹配时、分、秒后触发
     // 这样可以确保闹钟在每天的 00:00:00 准时触发
@@ -442,7 +454,14 @@ void setup()
     displayImage();
 
     // 配置外部唤醒源
-    esp_sleep_enable_ext1_wakeup(1ULL << DS3231_INTERRUPT_PIN, ESP_EXT1_WAKEUP_ANY_LOW);
+    esp_sleep_enable_ext1_wakeup_io(bitmask, ESP_EXT1_WAKEUP_ANY_LOW);
+    
+    gpio_pulldown_dis(WAKEUP_GPIO_1);
+    gpio_pullup_en(WAKEUP_GPIO_1);
+    gpio_pulldown_dis(WAKEUP_GPIO_2);
+    gpio_pullup_en(WAKEUP_GPIO_2);
+    gpio_pulldown_dis(WAKEUP_GPIO_11);
+    gpio_pullup_en(WAKEUP_GPIO_11);
 
     Serial.println("进入深度睡眠...");
     Serial.flush();
