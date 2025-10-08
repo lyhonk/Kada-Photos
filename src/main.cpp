@@ -585,7 +585,7 @@ void photo_modle()
   // 打印闹钟时间，便于确认
   Serial.printf("闹钟已设置，将在每小时 %02d:%02d 整点唤醒\n",
                 nextHour.hour(), nextHour.minute());
-  
+
   String photolistUrl = "http://statics.biogeeker.com/kada/photolist.json";
   String uuid = getUUID(photolistUrl);
   Serial.println("相册队列uuid为:");
@@ -616,20 +616,21 @@ void photo_modle()
       Serial.println(getPhotoCount(photolistUrl));
       photoIndex = 0;
       preferences.putUInt("index", photoIndex);
-    }else{
+    }
+    else
+    {
       photoIndex = photoIndex + 1;
       preferences.putUInt("index", photoIndex);
     }
     photoIndex = preferences.getUInt("index", 0);
     Serial.println("当前图片索引为:");
     Serial.println(photoIndex);
-    
+
     // 图片 URL 和本地保存路径
     String photoimageUrl = getPhotoUrl(photolistUrl, photoIndex);
     String photpdisplay = "/photpdisplay.bmp";
     displayImage(photoimageUrl, photpdisplay);
   }
-
 }
 void check_EXT_info()
 {
@@ -789,26 +790,26 @@ void setup()
   if (wifipw.OK())
   {
     check_EXT_info();
+    // Print the wakeup reason for ESP32
+    print_wakeup_reason();
+
+    // Use ext1 as a wake-up source
+    esp_sleep_enable_ext1_wakeup_io(bitmask, ESP_EXT1_WAKEUP_ANY_LOW);
+    // enable pull-down resistors and disable pull-up resistors
+    rtc_gpio_pulldown_dis(WAKEUP_GPIO_2);
+    rtc_gpio_pullup_en(WAKEUP_GPIO_2);
+    rtc_gpio_pulldown_dis(WAKEUP_GPIO_3);
+    rtc_gpio_pullup_en(WAKEUP_GPIO_3);
+    rtc_gpio_pulldown_dis(WAKEUP_GPIO_10);
+    rtc_gpio_pullup_en(WAKEUP_GPIO_10);
+    rtc_gpio_pulldown_dis(WAKEUP_GPIO_11);
+    rtc_gpio_pullup_en(WAKEUP_GPIO_11);
+
+    // Go to sleep now
+    Serial.println("Going to sleep now");
+    digitalWrite(RGB_BUILTIN, LOW);
+    esp_deep_sleep_start();
   }
-  // Print the wakeup reason for ESP32
-  print_wakeup_reason();
-
-  // Use ext1 as a wake-up source
-  esp_sleep_enable_ext1_wakeup_io(bitmask, ESP_EXT1_WAKEUP_ANY_LOW);
-  // enable pull-down resistors and disable pull-up resistors
-  rtc_gpio_pulldown_dis(WAKEUP_GPIO_2);
-  rtc_gpio_pullup_en(WAKEUP_GPIO_2);
-  rtc_gpio_pulldown_dis(WAKEUP_GPIO_3);
-  rtc_gpio_pullup_en(WAKEUP_GPIO_3);
-  rtc_gpio_pulldown_dis(WAKEUP_GPIO_10);
-  rtc_gpio_pullup_en(WAKEUP_GPIO_10);
-  rtc_gpio_pulldown_dis(WAKEUP_GPIO_11);
-  rtc_gpio_pullup_en(WAKEUP_GPIO_11);
-
-  // Go to sleep now
-  Serial.println("Going to sleep now");
-  digitalWrite(RGB_BUILTIN, LOW);
-  esp_deep_sleep_start();
 }
 
 void loop()
