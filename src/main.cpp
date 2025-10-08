@@ -479,7 +479,7 @@ int getPhotoCount(String url)
       http.end();
       return 0;
     }
-    result = doc["data"].size();
+    result = doc["photos"].size();
   }
   else
   {
@@ -510,7 +510,7 @@ String getPhotoUrl(String url, int index)
       Serial.println(error.f_str());
       http.end();
     }
-    result = doc["data"][index].as<String>();
+    result = doc["photos"][index]["dithering"].as<String>();
   }
   else
   {
@@ -605,22 +605,27 @@ void photo_modle()
     String photpdisplay = "/photpdisplay.bmp";
     displayImage(photoimageUrl, photpdisplay);
 
-    photoIndex = photoIndex + 1;
+    photoIndex = 0;
     preferences.putUInt("index", photoIndex);
   }
   else
   {
     Serial.println("数据没有更新");
+    if (photoIndex >= getPhotoCount(photolistUrl))
+    {
+      Serial.println(getPhotoCount(photolistUrl));
+      photoIndex = 0;
+      preferences.putUInt("index", photoIndex);
+    }else{
+      photoIndex = photoIndex + 1;
+      preferences.putUInt("index", photoIndex);
+    }
     photoIndex = preferences.getUInt("index", 0);
     Serial.println("当前图片索引为:");
     Serial.println(photoIndex);
-    if (photoIndex >= getPhotoCount(photolistUrl))
-    {
-      photoIndex = 0;
-      preferences.putUInt("index", photoIndex);
-    }
+    
     // 图片 URL 和本地保存路径
-    String photoimageUrl = getPhotoUrl(photolistUrl, 0);
+    String photoimageUrl = getPhotoUrl(photolistUrl, photoIndex);
     String photpdisplay = "/photpdisplay.bmp";
     displayImage(photoimageUrl, photpdisplay);
   }
