@@ -611,7 +611,7 @@ void photo_modle()
   else
   {
     Serial.println("数据没有更新");
-    if (photoIndex >= getPhotoCount(photolistUrl))
+    if (photoIndex >= getPhotoCount(photolistUrl) - 1)
     {
       Serial.println(getPhotoCount(photolistUrl));
       photoIndex = 0;
