@@ -701,6 +701,7 @@ void check_EXT_info()
   case 10:
     // 接收DS3231定时重启信号
     Serial.println("定时重启");
+    ESP.restart();
     break;
   case 11:
     // 强制刷新
