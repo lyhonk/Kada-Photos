@@ -345,9 +345,9 @@ void displayImage(String imageUrl, String filePath)
     return;
   }
 
-  Serial.print("图片加载中。。。。");
+  Serial.print("图片正在显示。。。。");
   drawBmp(filePath);
-  Serial.print("图片显示完成");
+  Serial.println("图片显示完成");
   epd.Sleep();
 }
 
@@ -637,28 +637,6 @@ void check_EXT_info()
   uint64_t GPIO_reason = esp_sleep_get_ext1_wakeup_status();
   int modle = preferences.getUInt("modle", 0);
 
-  // 检查是否有 GPIO 被触发
-  if (GPIO_reason == 0)
-  {
-    Serial.println("No GPIO triggered the wake up.");
-    if (modle == 0)
-    {
-      calendar_modle();
-    }
-    else
-    {
-      photo_modle();
-    }
-    return;
-  }
-
-  // 检查是否只有一个 GPIO 被触发（即是否为 2 的幂）
-  if ((GPIO_reason & (GPIO_reason - 1)) != 0)
-  {
-    Serial.println("Multiple GPIOs triggered the wake up.");
-    return;
-  }
-
   // 使用位运算获取最低置位的 GPIO 编号
   int GPIO_number = __builtin_ctzll(GPIO_reason);
 
@@ -714,7 +692,7 @@ void check_EXT_info()
     break;
   }
 
-  delay(5000); // 可考虑替换为非阻塞方式，如 millis()
+  delay(5000);
 }
 void init_system()
 {
